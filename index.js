@@ -3,7 +3,7 @@ const app = express();
 const path = require('path');
 const bodyParser = require('body-parser');
 
-var session = require('express-session')
+const session = require('express-session');
 
 app.use(
   session({
@@ -32,6 +32,7 @@ const signInController = require('./controllers/signInController');
 const signUpController = require('./controllers/signUpController');
 const forgetPasswordController = require('./controllers/forgetPasswordController');
 const landingPageController = require('./controllers/landingPageController');
+const emailVerificationController = require('./controllers/emailVerificationController'); // Add this line
 
 // Use body parser for form data
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -49,6 +50,9 @@ app.post('/SignUp', signUpController.signUp);
 
 app.get('/ForgetPassword', forgetPasswordController.forgetPasswordPage);
 app.post('/ForgetPassword/ChangePassword', forgetPasswordController.changePassword);
+
+app.get('/VerifyEmail', emailVerificationController.verifyEmailPage); // Add this line
+app.post('/VerifyEmail', emailVerificationController.verifyEmail); // Add this line
 
 app.get('/', landingPageController.landingPage);
 
