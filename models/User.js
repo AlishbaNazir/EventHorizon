@@ -1,22 +1,21 @@
-
-const mysql = require('mysql2');
+const { MongoClient, ObjectId } = require('mongodb');
 const bcrypt = require('bcryptjs');
 
 class User {
     constructor() {
-        this.con = mysql.createConnection({
-            host: "localhost",
-            user: "root",
-            password: "57365736",
-            database: "learnify"
-        });
+        this.client = new MongoClient("mongodb://localhost:27017", { useNewUrlParser: true, useUnifiedTopology: true });
 
-        // Connect to the database
-        this.con.connect((err) => {
+        this.db = null; // Reference to the MongoDB database
+        this.usersCollection = null; // Reference to the users collection
+
+        // Connect to MongoDB
+        this.client.connect((err) => {
             if (err) {
-                console.error('Error connecting to database:', err);
+                console.error('Error connecting to MongoDB:', err);
             } else {
-                console.log('Connected to database');
+                console.log('Connected to MongoDB');
+                this.db = this.client.db('eventhorizon');
+                this.usersCollection = this.db.collection('users');
             }
         });
     }
@@ -41,39 +40,22 @@ class User {
     }
 
     async checkEmailDuplicate(email) {
-        return await this.query('SELECT * FROM users WHERE email = ?', [email]);
+        return await this.usersCollection.findOne({ email: email });
     }
 
     async checkUserNameDuplicate(username) {
-        return await this.query('SELECT * FROM users WHERE username = ?', [username]);
+        return await this.usersCollection.findOne({ username: username });
     }
 
-    // Method to execute a query
-    async query(sql, params) {
-        return new Promise((resolve, reject) => {
-            this.con.query(sql, params, (err, results) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(results);
-                }
-            });
-        });
-    }
-
-    // Method to authenticate a user with a hashed password
     async authenticate(username, password) {
         try {
-            const query_str = 'SELECT * FROM users WHERE username = ?';
-            const [results, fields] = await this.query(query_str, [username]);
-            if (results.length === 0) {
+            const user = await this.usersCollection.findOne({ username: username });
+            if (!user) {
                 return false; // User not found
             }
-            // const hashedPassword = this.hashPassword(password);
-            const match = await this.validatePassword(password, results.password);
-            console.log(match);
+            const match = await this.validatePassword(password, user.password);
             if (match) {
-                return results; // Authentication successful
+                return user; // Authentication successful
             } else {
                 return false; // Incorrect password
             }
@@ -82,42 +64,43 @@ class User {
         }
     }
 
-    // Method to create a new user with a hashed password
     async createUser(username, email, password, role, first_name, last_name, phone_number, date_of_birth, address) {
         const hashedPassword = await this.hashPassword(password);
-        const query = 'INSERT INTO users (username, email, password, role, first_name, last_name, date_of_birth, phone_number, address) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
-        const values = [username, email, hashedPassword, role, first_name, last_name, date_of_birth, phone_number, address];
-        await this.query(query, values);
+        const user = {
+            username: username,
+            email: email,
+            password: hashedPassword,
+            role: role,
+            first_name: first_name,
+            last_name: last_name,
+            date_of_birth: date_of_birth,
+            phone_number: phone_number,
+            address: address
+        };
+        await this.usersCollection.insertOne(user);
     }
 
-    // Method to update password for a given email
     async updatePassword(email, password) {
         try {
             const hashedPassword = await this.hashPassword(password);
-            const query = 'UPDATE users SET password = ? WHERE email = ?';
-            const values = [hashedPassword, email];
-            await this.query(query, values);
+            await this.usersCollection.updateOne({ email: email }, { $set: { password: hashedPassword } });
         } catch (error) {
             throw new Error('Error updating password');
         }
     }
 
-    // Method to retrieve OTP for a given email
     async getOTP(email) {
         try {
-            const results = await this.query('SELECT otp FROM users WHERE email = ?', [email]);
-            return results;
+            const user = await this.usersCollection.findOne({ email: email });
+            return user.otp;
         } catch (error) {
             throw new Error('Error retrieving OTP');
         }
     }
 
-    // Method to add OTP for a given email
     async addOTP(email, OTP) {
         try {
-            const query = 'UPDATE users SET otp = ? WHERE email = ?';
-            const values = [OTP, email];
-            return await this.query(query, values);
+            await this.usersCollection.updateOne({ email: email }, { $set: { otp: OTP } });
         } catch (error) {
             throw new Error('Error adding OTP');
         }
