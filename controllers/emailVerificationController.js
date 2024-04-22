@@ -1,5 +1,9 @@
 const User = require('../models/User');
 
+exports.verifyEmailPage = (req, res) => {
+    res.render('emailVerification', { email: '', user_exist: '', status: '' });
+};
+
 // Controller method to process email verification form submission
 exports.verifyEmail = async (req, res) => {
     // Retrieve form data from request body

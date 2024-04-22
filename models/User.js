@@ -1,27 +1,13 @@
-const { MongoClient, ObjectId } = require('mongodb');
+const MongoClient = require('mongodb').MongoClient;
 const bcrypt = require('bcryptjs');
 
 class User {
     constructor() {
-        this.client = new MongoClient("mongodb://localhost:27017", { useNewUrlParser: true, useUnifiedTopology: true });
-
-        this.db = null; // Reference to the MongoDB database
-        this.usersCollection = null; // Reference to the users collection
-
-        // Connect to MongoDB
-        this.client.connect((err) => {
-            if (err) {
-                console.error('Error connecting to MongoDB:', err);
-            } else {
-                console.log('Connected to MongoDB');
-                this.db = this.client.db('eventhorizon');
-                this.usersCollection = this.db.collection('users');
-            }
-        });
+    
     }
 
     // Method to hash a password
-    async hashPassword(password) {
+    static async hashPassword(password) {
         try {
             const saltRounds = 10; // Salt rounds for bcrypt
             return await bcrypt.hash(password, saltRounds);
@@ -64,7 +50,27 @@ class User {
         }
     }
 
-    async createUser(username, email, password, role, first_name, last_name, phone_number, date_of_birth, address) {
+    static async connectDb() {
+        // Connection URL
+        const url = 'mongodb+srv://usmanamjad:TkiS8cU91tpX4YnS@eventmanagementsystem.9cqe4zu.mongodb.net/?retryWrites=true&w=majority&appName=EventManagementSystem';
+
+        // Database Name
+        const dbName = 'event';
+
+        // Create a new MongoClient
+        const client = new MongoClient(url);
+        try {
+            await client.connect();
+            console.log("Connected successfully to MongoDB");
+            return client.db(dbName);
+        } catch (err) {
+            console.error("Failed to connect to MongoDB", err);
+            return null;
+        }
+    }
+
+    static async createUser(username, email, password, role, first_name, last_name, phone_number, date_of_birth, address) {
+        const db = await this.connectDb();
         const hashedPassword = await this.hashPassword(password);
         const user = {
             username: username,
@@ -77,7 +83,14 @@ class User {
             phone_number: phone_number,
             address: address
         };
-        await this.usersCollection.insertOne(user);
+        try {
+            let collectionName = 'user';
+            await db.collection(collectionName).insertOne(user);
+            console.log('User created successfully');
+        } catch (error) {
+            console.error('Error creating user:', error);
+        }
+        // await this.usersCollection.insertOne(user);
     }
 
     async updatePassword(email, password) {
