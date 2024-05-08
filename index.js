@@ -51,8 +51,8 @@ app.post('/SignUp', signUpController.signUp);
 app.get('/ForgetPassword', forgetPasswordController.forgetPasswordPage);
 app.post('/ForgetPassword/ChangePassword', forgetPasswordController.changePassword);
 
-app.get('/VerifyEmail', emailVerificationController.verifyEmailPage); // Add this line
-app.post('/VerifyEmail', emailVerificationController.verifyEmail); // Add this line
+app.get('/VerifyEmail', emailVerificationController.verifyEmailPage);   
+app.post('/VerifyEmail', emailVerificationController.verifyEmail);
 
 app.get('/', landingPageController.landingPage);
 
