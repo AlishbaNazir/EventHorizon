@@ -3,11 +3,28 @@ const bcrypt = require('bcryptjs');
 
 class User {
     constructor() {
-    
+        // Connection URL
+        const url = 'mongodb+srv://usmanamjad:TkiS8cU91tpX4YnS@eventmanagementsystem.9cqe4zu.mongodb.net/?retryWrites=true&w=majority&appName=EventManagementSystem';
+
+        // Database Name
+        const dbName = 'event';
+
+        console.log('Connecting to MongoDB...');
+        // Create a new MongoClient
+        this.client = new MongoClient(url);
+    }
+
+    async connect() {
+        try {
+            await this.client.connect();
+            console.log("Connected successfully to MongoDB");
+        } catch (err) {
+            console.error("Failed to connect to MongoDB", err);
+        }
     }
 
     // Method to hash a password
-    static async hashPassword(password) {
+    async hashPassword(password) {
         try {
             const saltRounds = 10; // Salt rounds for bcrypt
             return await bcrypt.hash(password, saltRounds);
@@ -35,7 +52,10 @@ class User {
 
     async authenticate(username, password) {
         try {
-            const user = await this.usersCollection.findOne({ username: username });
+            await this.connect();
+            const db = this.client.db('event'); 
+            const usersCollection = db.collection('user'); 
+            const user = await usersCollection.findOne({ username: username });
             if (!user) {
                 return false; // User not found
             }
@@ -50,27 +70,7 @@ class User {
         }
     }
 
-    static async connectDb() {
-        // Connection URL
-        const url = 'mongodb+srv://usmanamjad:TkiS8cU91tpX4YnS@eventmanagementsystem.9cqe4zu.mongodb.net/?retryWrites=true&w=majority&appName=EventManagementSystem';
-
-        // Database Name
-        const dbName = 'event';
-
-        // Create a new MongoClient
-        const client = new MongoClient(url);
-        try {
-            await client.connect();
-            console.log("Connected successfully to MongoDB");
-            return client.db(dbName);
-        } catch (err) {
-            console.error("Failed to connect to MongoDB", err);
-            return null;
-        }
-    }
-
-    static async createUser(username, email, password, role, first_name, last_name, phone_number, date_of_birth, address) {
-        const db = await this.connectDb();
+    async createUser(username, email, password, role, first_name, last_name, phone_number, date_of_birth, address) {
         const hashedPassword = await this.hashPassword(password);
         const user = {
             username: username,
@@ -84,8 +84,10 @@ class User {
             address: address
         };
         try {
-            let collectionName = 'user';
-            await db.collection(collectionName).insertOne(user);
+            await this.connect();
+            const db = this.client.db('event');
+
+            await db.collection('user').insertOne(user);
             console.log('User created successfully');
         } catch (error) {
             console.error('Error creating user:', error);
@@ -104,16 +106,22 @@ class User {
 
     async getOTP(email) {
         try {
-            const user = await this.usersCollection.findOne({ email: email });
+            await this.connect();
+            const db = this.client.db('event');
+            const usersCollection = db.collection('user');
+            const user = await usersCollection.findOne({ email: email });
             return user.otp;
         } catch (error) {
             throw new Error('Error retrieving OTP');
         }
     }
-
+    
     async addOTP(email, OTP) {
         try {
-            await this.usersCollection.updateOne({ email: email }, { $set: { otp: OTP } });
+            await this.connect();
+            const db = this.client.db('event');
+            const usersCollection = db.collection('user');
+            await usersCollection.updateOne({ email: email }, { $set: { otp: OTP } });
         } catch (error) {
             throw new Error('Error adding OTP');
         }

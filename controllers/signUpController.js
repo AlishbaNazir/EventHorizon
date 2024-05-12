@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const nodemailer = require('nodemailer');
 
 // Controller method to render the sign-up page
 exports.signUpPage = (req, res) => {
@@ -19,27 +20,53 @@ exports.signUp = async (req, res) => {
     const username = req.body.username;
     const password = req.body.passwordField;
 
+    const user = new User();
 
     try {
-        // // Check if email is already in use
-        // const emailResults = await user.checkEmailDuplicate(email);
-        // if (emailResults.length > 0) {
-        //     // User with this email already exists, render sign-up page with error message
-        //     return res.render('signUp', { error: 'Email already in use' });
-        // }
-
-        // // Check if username is already in use
-        // const usernameResults = await user.checkUserNameDuplicate(username);
-        // if (usernameResults.length > 0) {
-        //     // User with this username already exists, render sign-up page with error message
-        //     return res.render('signUp', { error: 'Username already in use' });
-        // }
 
         // Create new user with hashed password
-        await User.createUser(username, email, password, role, first_name, last_name, phone_number, date_of_birth, address);
+        await user.createUser(username, email, password, role, first_name, last_name, phone_number, date_of_birth, address);
 
-        // Redirect to sign-in page upon successful sign-up
-        res.redirect('/VerifyEmail');
+        try {
+            // Generate a random OTP (e.g., 6-digit number)
+            const OTP = Math.floor(100000 + Math.random() * 900000);
+
+            // Set up nodemailer transporter
+            const transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: 'usmanamjad495@gmail.com', // Your Gmail email address
+                    pass: 'gcbg jmxx cpkp vpdh' // Your Gmail password or App password if you have 2-step verification enabled
+                }
+            });
+
+            // Email options
+            const mailOptions = {
+                from: 'usmanamjad495@gmail.com', // Your Gmail email address
+                to: email,
+                subject: 'OTP Verification',
+                text: `Your OTP for verification is: ${OTP}`
+            };
+
+            // Send email with OTP
+            transporter.sendMail(mailOptions, async function(error, info) {
+                if (error) {
+                    console.error('Error sending OTP email:', error);
+                    // Handle error, e.g., render an error page
+                    return res.status(500).send('Internal Server Error');
+                } else {
+                    // Save the OTP somewhere
+                    user.addOTP(email, OTP);
+                    req.session.userEmail = email;
+                    // Redirect to a page where the user can enter the OTP for verification
+                    res.redirect('/VerifyEmail');
+                }
+            });
+        } catch (error) {
+            console.error('Error sending OTP:', error);
+            return res.status(500).send('Internal Server Error');
+        }
+
     } catch (error) {
         // Handle error
         console.error('Error processing sign-up:', error);
