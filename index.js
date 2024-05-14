@@ -64,7 +64,7 @@ app.get('/addEvent', eventController.eventPage);
 app.post('/create', eventController.event);
 
 app.get('/profile', userProfileController.userProfile);
-// app.post('/profile', userProfileController.saveProfile);
+app.post('/profile', userProfileController.saveProfile);
 //2. CRUD OPERATIONS
 
 //create

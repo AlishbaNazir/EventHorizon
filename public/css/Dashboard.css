@@ -6,12 +6,24 @@ body {
     box-sizing: border-box;
     display: flex;
     justify-content: center;
-    background-image: linear-gradient(to right,#7F8C8D,#000000);
     place-items: center;
     min-height: 100vh;
-    background-color: black;
     font-family: 'Sacramento', cursive;
     font-family: 'Ubuntu', sans-serif;
+
+    background: #0f0c29;
+    background: -webkit-linear-gradient(
+      to right,
+      #24243e,
+      #302b63,
+      #0f0c29
+    ); 
+    background: linear-gradient(
+      to right,
+      #24243e,
+      #302b63,
+      #0f0c29
+    );
 }
 
 textarea {
