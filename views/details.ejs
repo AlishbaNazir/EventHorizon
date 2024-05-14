@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Event Details</title>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN"
+    crossorigin="anonymous"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous" />
+  <link rel="stylesheet" type="text/css" href="/css/eventDetails.css" />
+
+</head>
+
+<body>
+  <main>
+    <header class="header-active">
+      <a href="/" class="scroll-top">
+        <i class="bx bx-up-arrow-alt"></i>
+      </a>
+
+      <div class="nav container">
+        <ul class="navbar">
+          <li><a href="/" class="nav-link">Home</a></li>
+          </ul>
+      </div>
+    </header>
+    <!--header ends-->
+
+    <div class="full">
+      <div class="outoutsp">
+
+        <div class="outsp">
+          <div class="left">
+            <img src="<%=event.photo%>">
+          </div>
+          <div class="right">
+            <span>Date: <%=event.dateStart.toLocaleDateString()%></span>
+            <span>Name: <%=event.name%></span>
+            <span>Time: <%=event.time%></span>
+            <span>Mode: <%=event.mode%></span>
+            <span>Venue: <%=event.venue%></span>
+            <span>Registration Fee: <%=event.registerationFee%></span>
+            <span>Cash Prize: <%=event.cashPrice%></span>
+            <span>Cash Prize: <%=event.contact%></span>
+          </div>
+
+        </div>
+      </div>
+      <div class="form">
+        <center>
+          <h3>Register By Submitting The Form</h3><br>
+          <form action="/testing" method="POST">
+            <input type="text" placeholder="Name" name="name" required><br>
+            <input type="email" placeholder="Email" name="email" required><br>
+            <input type="number" placeholder="Mobile No" name="mobile" required><br>
+            <input type="text" placeholder="Event Name" name="events" required><br>
+            <input type="number" placeholder="Amount" name="amount" required> <br>
+            <input type="text" placeholder="Enter Transaction Id" name="transactionid" required> <br><br>
+            <label for="Year Of Study">Year Of Study</label>
+            <select name="yos" id="yos" placeholder="Year Of Study">
+              <option value="I">I</option>
+              <option value="II">II</option>
+              <option value="III">III</option>
+              <option value="IV">IV</option>
+
+            </select>
+            <br><br>
+
+            <img src="/images/qr.jpg" alt="Qrcode" height="300px" width="300px" class="qr" download>
+            <br>
+            <br>
+            <button type="submit" class="subbtn">Submit</button>
+
+
+
+          </form>
+        </center><br><br>
+      </div>
+    </div>
+    <br><br>
+    <script src="/js/index.js"></script>
+</body>
+
+</html>

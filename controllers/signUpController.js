@@ -59,6 +59,10 @@ exports.signUp = async (req, res) => {
                     user.addOTP(email, OTP);
                     req.session.userEmail = email;
                     // Redirect to a page where the user can enter the OTP for verification
+                    req.locals = {
+                        ...req.locals,
+                        user_role: role
+                      };
                     res.redirect('/VerifyEmail');
                 }
             });

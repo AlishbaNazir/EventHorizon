@@ -55,10 +55,24 @@ class User {
             await this.connect();
             const db = this.client.db('event'); 
             const usersCollection = db.collection('user'); 
-            const user = await usersCollection.findOne({ username: username });
+            let user = await usersCollection.findOne({ username: username });
+        
+            // If user not found in 'user' collection, check 'admin' collection
             if (!user) {
-                return false; // User not found
+                const adminCollection = db.collection('admin');
+                user = await adminCollection.findOne({ username: username });
+        
+                // If user is found in 'admin' collection, add 'role' property to user object
+                if (user) {
+                    user.role = 'admin';
+                } else {
+                    return false; // User not found in both collections
+                }
             }
+            else {
+                user.role = 'user';
+            }
+        
             const match = await this.validatePassword(password, user.password);
             if (match) {
                 return user; // Authentication successful
@@ -87,12 +101,18 @@ class User {
             await this.connect();
             const db = this.client.db('event');
 
-            await db.collection('user').insertOne(user);
-            console.log('User created successfully');
+            if (role == "admin"){
+                await db.collection('admin').insertOne(user);
+                console.log('Admin created successfully');
+            }
+            else{
+                await db.collection('user').insertOne(user);
+                console.log('User created successfully');
+            }
+
         } catch (error) {
             console.error('Error creating user:', error);
         }
-        // await this.usersCollection.insertOne(user);
     }
 
     async updatePassword(email, password) {

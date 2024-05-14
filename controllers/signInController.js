@@ -18,11 +18,15 @@ exports.signIn = async (req, res) => {
     try {
         const userResult = await user.authenticate(username, password);
         
-        if (userResult) {
+        if (userResult.role == "admin") {
             // Authentication successful, redirect to dashboard or homepage
             req.session.isLoggedIn = true;
             req.session.username = username;
-            res.redirect('/');
+            res.redirect('/adminDashboard');
+        } else if (userResult.role == "user") {
+            req.session.isLoggedIn = true;
+            req.session.username = username;
+            res.redirect('/Profile');
         } else {
             // Authentication failed, render sign-in page with error message
             res.render('signIn', { error: 'Invalid username or password' });

@@ -19,8 +19,12 @@ exports.verifyEmail = async (req, res) => {
         if (verificationCode != otp) {
             return res.render('verifyEmail', { error: 'Invalid verification code' });
         }
-
-        res.redirect('/');
+        if (req.locals.user_role == "admin"){
+            res.redirect('/adminDashboard');
+        }
+        else {
+            res.redirect('/Profile');
+        }
     } catch (error) {
         console.error('Error processing email verification:', error);
         return res.status(500).send('Internal Server Error');
